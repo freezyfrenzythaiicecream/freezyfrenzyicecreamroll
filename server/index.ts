@@ -1,6 +1,7 @@
 import 'dotenv/config';
-import { readFileSync, existsSync, statSync } from 'fs';
-import { join, normalize } from 'path';
+import { randomUUID } from 'node:crypto';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'fs';
+import { join, normalize, resolve as pathResolve } from 'path';
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
@@ -28,8 +29,30 @@ const distDir = normalize(join(process.cwd(), 'dist'));
 /** API-only process: `npm run dev` starts this alongside Vite — do not serve SPA here. */
 const devApiOnly = process.env.DEV_ONLY_API === '1';
 
+const SITE_ASSET_MAX_BYTES = 5 * 1024 * 1024;
+const UPLOAD_MIME_TO_EXT: Record<string, string> = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'image/gif': '.gif',
+};
+
+function siteAssetsRoot(): string {
+  const raw = process.env.SITE_ASSETS_PATH?.trim();
+  if (raw) return normalize(pathResolve(raw));
+  return normalize(join(process.cwd(), 'data', 'site-assets'));
+}
+
 function safeResolvedPath(root: string, relative: string): string | null {
   const candidate = normalize(join(root, relative));
+  if (!candidate.startsWith(root)) return null;
+  return candidate;
+}
+
+function safeSiteAssetPath(name: string): string | null {
+  if (!/^[a-zA-Z0-9._-]+$/.test(name)) return null;
+  const root = siteAssetsRoot();
+  const candidate = normalize(join(root, name));
   if (!candidate.startsWith(root)) return null;
   return candidate;
 }
@@ -82,6 +105,46 @@ api.put('/site-config', async (c) => {
   const merged = mergeSiteConfig({ ...current, ...(body as Partial<SiteConfig>) });
   saveSiteConfig(db, merged);
   return c.json(merged);
+});
+
+api.get('/site-assets/:name', (c) => {
+  const name = c.req.param('name');
+  const target = safeSiteAssetPath(name);
+  if (!target || !existsSync(target) || !statSync(target).isFile()) {
+    return c.body('Not found', 404);
+  }
+  const buf = readFileSync(target);
+  return c.body(buf, 200, { 'Content-Type': contentType(target) });
+});
+
+api.post('/site-assets', async (c) => {
+  const sid = getCookie(c, COOKIE);
+  const user = getSessionUser(db, sid);
+  if (!user || (user.role !== 'admin' && user.role !== 'editor')) {
+    return c.json({ error: 'Forbidden' }, 403);
+  }
+  let body: Record<string, string | File>;
+  try {
+    body = (await c.req.parseBody()) as Record<string, string | File>;
+  } catch {
+    return c.json({ error: 'Invalid multipart body' }, 400);
+  }
+  const file = body['file'];
+  if (!(file instanceof File)) {
+    return c.json({ error: 'Expected file field named file' }, 400);
+  }
+  if (file.size > SITE_ASSET_MAX_BYTES) {
+    return c.json({ error: 'File too large (max 5MB)' }, 413);
+  }
+  const ext = UPLOAD_MIME_TO_EXT[file.type];
+  if (!ext) {
+    return c.json({ error: 'Use JPEG, PNG, WebP, or GIF' }, 400);
+  }
+  const root = siteAssetsRoot();
+  mkdirSync(root, { recursive: true });
+  const filename = `${randomUUID()}${ext}`;
+  writeFileSync(join(root, filename), Buffer.from(await file.arrayBuffer()));
+  return c.json({ url: `/api/site-assets/${filename}` });
 });
 
 api.get('/auth/me', (c) => {

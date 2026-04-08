@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Menu, X, Phone, MapPin } from 'lucide-react';
 import { useSiteConfig } from '../context/SiteConfigContext';
+import EditablePhoto from './EditablePhoto';
 
 const Header: React.FC = () => {
   const { config } = useSiteConfig();
@@ -38,18 +39,28 @@ const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center min-h-28 py-3">
           <div className="flex items-center space-x-4">
-            <button 
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => scrollToSection('home')}
-              className="flex items-center transition-transform hover:scale-105 flex-shrink-0"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  scrollToSection('home');
+                }
+              }}
+              className="flex items-center transition-transform hover:scale-105 flex-shrink-0 cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-yellow-500 focus-visible:ring-offset-2"
+              aria-label="Go to home"
             >
               <div className="h-24 w-24 rounded-full border-4 border-black overflow-hidden flex items-center justify-center bg-white shadow-md">
-                <img
-                  src="/images/logo.png"
+                <EditablePhoto
+                  canonicalSrc="/images/logo.png"
                   alt="Freezy Frenzy Thai Ice Cream Roll"
-                  className="h-full w-full object-contain"
+                  className="relative group h-full w-full"
+                  imgClassName="h-full w-full object-contain"
                 />
               </div>
-            </button>
+            </div>
             <span className="text-lg sm:text-xl font-bold text-gray-800 hidden sm:inline leading-tight ml-2">Freezy Frenzy Thai Ice Cream Roll</span>
           </div>
 

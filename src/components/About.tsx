@@ -1,5 +1,6 @@
 import React from 'react';
-import { Users, Award, Clock, Sparkles, Leaf, Zap, Heart, Star } from 'lucide-react';
+import { Users, Award, Leaf, Heart } from 'lucide-react';
+import EditablePhoto from './EditablePhoto';
 
 const About: React.FC = () => {
   const features = [
@@ -95,25 +96,25 @@ const About: React.FC = () => {
 
           <div className="relative">
             <div className="grid grid-cols-2 gap-4">
-              <img 
-                src="/images/rolls/berryblast.png" 
-                alt="Ice cream rolling process" 
-                className="rounded-xl shadow-lg h-48 w-full object-cover"
+              <EditablePhoto
+                canonicalSrc="/images/rolls/berryblast.png"
+                alt="Ice cream rolling process"
+                imgClassName="rounded-xl shadow-lg h-48 w-full object-cover"
               />
-              <img 
-                src="/images/rolls/matchamadness.png" 
-                alt="Fresh ingredients" 
-                className="rounded-xl shadow-lg h-48 w-full object-cover mt-8"
+              <EditablePhoto
+                canonicalSrc="/images/rolls/matchamadness.png"
+                alt="Fresh ingredients"
+                imgClassName="rounded-xl shadow-lg h-48 w-full object-cover mt-8"
               />
-              <img 
-                src="/images/rolls/thaimeup.png" 
-                alt="Finished ice cream rolls" 
-                className="rounded-xl shadow-lg h-48 w-full object-cover -mt-8"
+              <EditablePhoto
+                canonicalSrc="/images/rolls/thaimeup.png"
+                alt="Finished ice cream rolls"
+                imgClassName="rounded-xl shadow-lg h-48 w-full object-cover -mt-8"
               />
-              <img 
-                src="/images/rolls/smoresgalore.png" 
-                alt="Happy customers" 
-                className="rounded-xl shadow-lg h-48 w-full object-cover"
+              <EditablePhoto
+                canonicalSrc="/images/rolls/smoresgalore.png"
+                alt="Happy customers"
+                imgClassName="rounded-xl shadow-lg h-48 w-full object-cover"
               />
             </div>
             

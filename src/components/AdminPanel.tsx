@@ -4,7 +4,7 @@ import { useSiteConfig } from '../context/SiteConfigContext';
 import { useAuth } from '../context/AuthContext';
 import type { SiteConfig } from '../siteConfig';
 
-type SectionToggleKey = Exclude<keyof SiteConfig, 'announcement'>;
+type SectionToggleKey = Exclude<keyof SiteConfig, 'announcement' | 'imageOverrides'>;
 
 const sectionFields: { key: SectionToggleKey; label: string }[] = [
   { key: 'showHero', label: 'Hero (home)' },

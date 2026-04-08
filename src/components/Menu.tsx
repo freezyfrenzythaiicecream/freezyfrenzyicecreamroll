@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Heart, Clock, Thermometer, Leaf, Zap, Star, Info } from 'lucide-react';
+import EditablePhoto from './EditablePhoto';
+import { menuItemImageOverrideKey } from '../imageUrls';
 
 interface MenuItem {
   id: number;
@@ -536,11 +538,13 @@ const Menu: React.FC = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredItems.map((item) => (
             <div key={item.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
-              <div className="relative">
-                <img 
-                  src={item.image} 
+              <div className="relative group">
+                <EditablePhoto
+                  canonicalSrc={item.image}
+                  overrideKey={menuItemImageOverrideKey(item.id)}
                   alt={item.name}
-                  className="w-full h-48 object-cover"
+                  className="relative"
+                  imgClassName="w-full h-48 object-cover"
                 />
                 {item.popular && (
                   <div className="absolute top-4 left-4 bg-gradient-to-r from-orange-400 to-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">

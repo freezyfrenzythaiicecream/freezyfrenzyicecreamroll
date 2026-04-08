@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { Heart, Instagram, Facebook, Twitter, Mail, Phone, MapPin, Clock, Info } from 'lucide-react';
+import { Heart, Instagram, Facebook, Mail, Phone, MapPin, Clock, Info } from 'lucide-react';
 import { useSiteConfig } from '../context/SiteConfigContext';
+import EditablePhoto from './EditablePhoto';
 
 interface FooterProps {
   onShowNutritionalFacts?: () => void;
@@ -36,10 +37,11 @@ const Footer: React.FC<FooterProps> = ({ onShowNutritionalFacts }) => {
           <div className="lg:col-span-2">
             <div className="flex items-center space-x-3 mb-6">
               <div className="h-20 w-20 rounded-full border-4 border-black overflow-hidden flex items-center justify-center bg-white">
-                <img
-                  src="/images/logo.png"
+                <EditablePhoto
+                  canonicalSrc="/images/logo.png"
                   alt="Freezy Frenzy Thai Ice Cream Roll"
-                  className="h-full w-full object-contain"
+                  className="relative group h-full w-full"
+                  imgClassName="h-full w-full object-contain"
                 />
               </div>
               <div>

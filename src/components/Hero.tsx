@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight, Star, Leaf, Heart, Info } from 'lucide-react';
 import { useSiteConfig } from '../context/SiteConfigContext';
+import EditablePhoto from './EditablePhoto';
 
 const Hero: React.FC = () => {
   const { config } = useSiteConfig();
@@ -102,11 +103,12 @@ const Hero: React.FC = () => {
           </div>
           
           <div className="relative">
-            <div className="relative z-10">
-              <img 
-                src="/images/rolls/cookiemonster.png" 
-                alt="Cookie Monster - Our Most Popular Ice Cream Roll" 
-                className="rounded-2xl shadow-2xl w-full h-[600px] object-cover"
+            <div className="relative z-10 group">
+              <EditablePhoto
+                canonicalSrc="/images/rolls/cookiemonster.png"
+                alt="Cookie Monster - Our Most Popular Ice Cream Roll"
+                className="relative"
+                imgClassName="rounded-2xl shadow-2xl w-full h-[600px] object-cover"
               />
               <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-xl shadow-lg">
                 <div className="text-2xl font-bold text-gray-800">Cookie Monster</div>
