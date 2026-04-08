@@ -1,10 +1,13 @@
 import React, { useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Phone, MapPin } from 'lucide-react';
 import { useSiteConfig } from '../context/SiteConfigContext';
 import EditablePhoto from './EditablePhoto';
 
 const Header: React.FC = () => {
   const { config } = useSiteConfig();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const announcement = config.announcement.trim();
 
@@ -21,11 +24,35 @@ const Header: React.FC = () => {
     [config]
   );
 
-  const scrollToSection = (sectionId: string) => {
+  const goToNavTarget = (sectionId: string) => {
+    setIsMenuOpen(false);
+    if (sectionId === 'wishing-wall') {
+      navigate('/wishing-wall');
+      return;
+    }
+    if (sectionId === 'about') {
+      navigate('/about');
+      return;
+    }
+    if (location.pathname !== '/') {
+      navigate({ pathname: '/', hash: `#${sectionId}` });
+      return;
+    }
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
-      setIsMenuOpen(false);
+    }
+  };
+
+  const goHome = () => {
+    setIsMenuOpen(false);
+    if (location.pathname !== '/') {
+      navigate('/');
+      return;
+    }
+    const element = document.getElementById('home');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -42,11 +69,11 @@ const Header: React.FC = () => {
             <div
               role="button"
               tabIndex={0}
-              onClick={() => scrollToSection('home')}
+              onClick={() => goHome()}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  scrollToSection('home');
+                  goHome();
                 }
               }}
               className="flex items-center transition-transform hover:scale-105 flex-shrink-0 cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-yellow-500 focus-visible:ring-offset-2"
@@ -69,7 +96,7 @@ const Header: React.FC = () => {
               <button
                 key={item.id}
                 type="button"
-                onClick={() => scrollToSection(item.id)}
+                onClick={() => goToNavTarget(item.id)}
                 className="text-gray-700 hover:text-yellow-500 font-medium transition-colors py-2 px-2"
               >
                 {item.label}
@@ -103,7 +130,7 @@ const Header: React.FC = () => {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => scrollToSection(item.id)}
+                  onClick={() => goToNavTarget(item.id)}
                   className="text-gray-700 hover:text-yellow-500 hover:bg-yellow-50 font-medium py-3 px-4 text-left transition-colors rounded-lg"
                 >
                   {item.label}

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SiteConfigProvider, useSiteConfig } from './context/SiteConfigContext';
 import Header from './components/Header';
@@ -13,8 +14,63 @@ import HotBeveragePopup from './components/HotBeveragePopup';
 import NutritionalFacts from './components/NutritionalFacts';
 import AdminPanel from './components/AdminPanel';
 
-function AppContent() {
+function useHomeHashScroll() {
+  const location = useLocation();
+  useEffect(() => {
+    if (!location.hash) return;
+    const id = location.hash.slice(1);
+    if (!id) return;
+    const frame = requestAnimationFrame(() => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [location.pathname, location.hash]);
+}
+
+function HomePage() {
   const { config } = useSiteConfig();
+  const navigate = useNavigate();
+  const location = useLocation();
+  useHomeHashScroll();
+  useEffect(() => {
+    if (location.hash === '#about') {
+      navigate('/about', { replace: true });
+    }
+  }, [location.hash, navigate]);
+  return (
+    <>
+      {config.showHero ? <Hero /> : null}
+      {config.showMenu ? <Menu /> : null}
+      {config.showGallery ? <Gallery /> : null}
+      {config.showContact ? <Contact /> : null}
+    </>
+  );
+}
+
+function AboutPage() {
+  const { config } = useSiteConfig();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  if (!config.showAbout) {
+    return <Navigate to="/" replace />;
+  }
+  return <About />;
+}
+
+function WishingWallPage() {
+  const { config } = useSiteConfig();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  if (!config.showWishingWall) {
+    return <Navigate to="/" replace />;
+  }
+  return <WishingWall />;
+}
+
+function AppContent() {
   const [isNutritionalFactsOpen, setIsNutritionalFactsOpen] = useState(false);
 
   return (
@@ -26,12 +82,12 @@ function AppContent() {
         onClose={() => setIsNutritionalFactsOpen(false)}
       />
       <Header />
-      {config.showHero ? <Hero /> : null}
-      {config.showMenu ? <Menu /> : null}
-      {config.showAbout ? <About /> : null}
-      {config.showWishingWall ? <WishingWall /> : null}
-      {config.showGallery ? <Gallery /> : null}
-      {config.showContact ? <Contact /> : null}
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/wishing-wall" element={<WishingWallPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
       <Footer onShowNutritionalFacts={() => setIsNutritionalFactsOpen(true)} />
     </>
   );

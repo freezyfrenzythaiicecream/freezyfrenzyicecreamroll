@@ -1,8 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Users, Award, Leaf, Heart } from 'lucide-react';
+import { useSiteConfig } from '../context/SiteConfigContext';
 import EditablePhoto from './EditablePhoto';
 
 const About: React.FC = () => {
+  const navigate = useNavigate();
+  const { config } = useSiteConfig();
+  const hasAnnouncement = config.announcement.trim().length > 0;
+  const topPad = hasAnnouncement ? 'pt-40 sm:pt-44' : 'pt-32';
   const features = [
     {
       icon: Leaf,
@@ -27,7 +33,7 @@ const About: React.FC = () => {
   ];
 
   return (
-    <section id="about" className="py-20 bg-white">
+    <section id="about" className={`${topPad} py-20 bg-white`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
@@ -38,19 +44,19 @@ const About: React.FC = () => {
             <div className="prose prose-lg text-gray-600 mb-8">
               <p className="mb-4">
                 At Freezy Frenzy Thai Ice Cream Roll, we believe ice cream should be accessible to everyone. That's why we offer 
-                both traditional sweet ice cream rolls and innovative sugar-free, keto-friendly options. 
+                traditional sweet rolls, sugar-free keto-friendly options, and a vegan coconut cream base. 
                 Our unique rolling technique transforms premium ingredients into beautiful, delicious works of art.
               </p>
               
               <p className="mb-4">
-                Starting with our signature ice cream base (available in both traditional and sugar-free versions), 
+                Starting with our signature ice cream base (traditional, sugar-free, or vegan), 
                 we pour your chosen flavors onto our -18°C cold plate. Watch in amazement as we chop, mix, and 
                 spread your ingredients before expertly rolling them into perfect spirals right before your eyes.
               </p>
 
               <div className="bg-gradient-to-r from-yellow-50 to-pink-50 p-6 rounded-xl border border-yellow-200 mb-4">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Our Ice Cream Base Ingredients</h3>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="bg-white p-4 rounded-lg border border-pink-200">
                     <h4 className="font-bold text-pink-700 mb-2">Traditional Sweet Base</h4>
                     <ul className="text-gray-700 text-sm space-y-1">
@@ -68,12 +74,20 @@ const About: React.FC = () => {
                       <li>• Allulose</li>
                     </ul>
                   </div>
+                  <div className="bg-white p-4 rounded-lg border border-amber-200 md:col-span-2 lg:col-span-1">
+                    <h4 className="font-bold text-amber-800 mb-2">Vegan Coconut Cream Base</h4>
+                    <ul className="text-gray-700 text-sm space-y-1">
+                      <li>• Coconut cream</li>
+                      <li>• Sugar, fructose, or sweetener of choice</li>
+                      <li>• Cornstarch</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
               
               <p>
-                Every roll tells a story, and every visit creates a memory. Whether you're following a strict 
-                keto diet or simply want to indulge in a classic sweet treat, we have the perfect ice cream 
+                Every roll tells a story, and every visit creates a memory. Whether you're vegan, following a strict 
+                keto diet, or simply want to indulge in a classic sweet treat, we have the perfect ice cream 
                 roll for you. Come experience the magic of fresh, made-to-order ice cream rolls.
               </p>
             </div>
@@ -149,6 +163,7 @@ const About: React.FC = () => {
             <div className="flex flex-wrap justify-center gap-4">
               <span className="bg-green-200 text-green-800 px-4 py-2 rounded-full font-semibold">Keto-Friendly</span>
               <span className="bg-blue-200 text-blue-800 px-4 py-2 rounded-full font-semibold">Diabetic-Friendly</span>
+              <span className="bg-amber-200 text-amber-900 px-4 py-2 rounded-full font-semibold">Vegan Base</span>
               <span className="bg-pink-200 text-pink-800 px-4 py-2 rounded-full font-semibold">Traditional Sweet</span>
               <span className="bg-yellow-200 text-yellow-800 px-4 py-2 rounded-full font-semibold">Family-Friendly</span>
             </div>
@@ -175,12 +190,8 @@ const About: React.FC = () => {
               </div>
             </div>
             <button
-              onClick={() => {
-                const element = document.getElementById('wishing-wall');
-                if (element) {
-                  element.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
+              type="button"
+              onClick={() => navigate('/wishing-wall')}
               className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 px-8 rounded-full hover:shadow-lg transition-all duration-300 transform hover:scale-105 border-2 border-white"
             >
               Learn More About Wishing Wall & Marshmallow Toasting

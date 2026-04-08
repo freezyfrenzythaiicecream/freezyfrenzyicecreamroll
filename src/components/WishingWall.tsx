@@ -1,20 +1,24 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, StickyNote, Flame, Heart, Users, Star } from 'lucide-react';
+import { useSiteConfig } from '../context/SiteConfigContext';
 
 const WishingWall: React.FC = () => {
-  const scrollToAbout = () => {
-    const element = document.getElementById('about');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  const navigate = useNavigate();
+  const { config } = useSiteConfig();
+  const hasAnnouncement = config.announcement.trim().length > 0;
+  const topPad = hasAnnouncement ? 'pt-40 sm:pt-44' : 'pt-32';
 
   return (
-    <section id="wishing-wall" className="py-20 bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50">
+    <section
+      id="wishing-wall"
+      className={`${topPad} py-20 bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <button
-          onClick={scrollToAbout}
+          type="button"
+          onClick={() => navigate('/about')}
           className="flex items-center space-x-2 text-gray-600 hover:text-purple-600 mb-8 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -165,23 +169,15 @@ const WishingWall: React.FC = () => {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <button
-              onClick={() => {
-                const element = document.getElementById('menu');
-                if (element) {
-                  element.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
+              type="button"
+              onClick={() => navigate('/#menu')}
               className="bg-white text-purple-600 font-bold py-3 px-8 rounded-full hover:shadow-lg transition-all duration-300 transform hover:scale-105"
             >
               View Menu
             </button>
             <button
-              onClick={() => {
-                const element = document.getElementById('contact');
-                if (element) {
-                  element.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
+              type="button"
+              onClick={() => navigate('/#contact')}
               className="bg-purple-700 text-white font-bold py-3 px-8 rounded-full hover:bg-purple-800 transition-all duration-300 transform hover:scale-105 border-2 border-white"
             >
               Visit Us

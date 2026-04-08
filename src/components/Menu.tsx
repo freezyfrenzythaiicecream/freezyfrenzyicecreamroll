@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, Clock, Thermometer, Leaf, Zap, Star, Info } from 'lucide-react';
+import { Heart, Clock, Thermometer, Leaf, Zap, Star, Info, Sprout } from 'lucide-react';
 import EditablePhoto from './EditablePhoto';
 import { menuItemImageOverrideKey } from '../imageUrls';
 
@@ -488,10 +488,14 @@ const Menu: React.FC = () => {
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Every item is made fresh to order using premium ingredients. 
-            All Thai Ice Cream Rolls available in keto, diabetic, and low carb versions with allulose sweetener.
+            Thai Ice Cream Rolls are available with a vegan coconut cream base, or in keto, diabetic, and low carb versions with allulose sweetener.
           </p>
           
           <div className="flex flex-wrap justify-center gap-4 mt-6">
+            <div className="flex items-center space-x-2 bg-amber-100 px-4 py-2 rounded-full border border-amber-200">
+              <Sprout className="w-5 h-5 text-amber-700" />
+              <span className="text-amber-900 font-semibold">Vegan Coconut Base</span>
+            </div>
             <div className="flex items-center space-x-2 bg-green-100 px-4 py-2 rounded-full border border-green-200">
               <Leaf className="w-5 h-5 text-green-600" />
               <span className="text-green-800 font-semibold">Keto Options Available</span>
@@ -613,10 +617,11 @@ const Menu: React.FC = () => {
           <div className="text-center">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Special Dietary Options</h3>
             <p className="text-lg text-gray-600 mb-6 max-w-4xl mx-auto">
-              All our Thai Ice Cream Rolls are available in keto, diabetic, and low carb versions using allulose sweetener. 
-              Perfect for those following a ketogenic diet or managing blood sugar levels.
+              Ask for our vegan base (coconut cream, your choice of sweetener, and cornstarch) or go keto-friendly with allulose. 
+              Perfect for plant-based diets, ketogenic eating, or managing blood sugar levels—confirm options when you order.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
+              <span className="bg-amber-200 text-amber-900 px-4 py-2 rounded-full font-semibold">Vegan Base</span>
               <span className="bg-green-200 text-green-800 px-4 py-2 rounded-full font-semibold">Keto-Friendly</span>
               <span className="bg-blue-200 text-blue-800 px-4 py-2 rounded-full font-semibold">Diabetic-Friendly</span>
               <span className="bg-purple-200 text-purple-800 px-4 py-2 rounded-full font-semibold">Low Carb</span>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Info, Leaf, Heart } from 'lucide-react';
+import { X, Info, Leaf, Heart, Sprout } from 'lucide-react';
 
 interface NutritionalFactsProps {
   isOpen: boolean;
@@ -225,7 +225,7 @@ const NutritionalFacts: React.FC<NutritionalFactsProps> = ({ isOpen, onClose }) 
           </div>
 
           {/* Nutrition Labels */}
-          <div className="grid md:grid-cols-2 gap-8 mb-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
             {/* Traditional Sweet Base */}
             <div className="flex flex-col items-center">
               <div className="flex items-center space-x-3 mb-4">
@@ -286,6 +286,38 @@ const NutritionalFacts: React.FC<NutritionalFactsProps> = ({ isOpen, onClose }) 
                 isAllulose={true}
               />
             </div>
+
+            {/* Vegan Coconut Cream Base */}
+            <div className="flex flex-col items-center md:col-span-2 lg:col-span-1">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="bg-amber-100 p-2 rounded-full">
+                  <Sprout className="w-6 h-6 text-amber-700" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Vegan Coconut Cream Base</h3>
+              </div>
+              <NutritionLabel
+                title="Vegan Ice Cream Base"
+                servingSize="150 ml"
+                servings={1}
+                calories={450}
+                totalFat={36}
+                saturatedFat={32}
+                transFat={0}
+                cholesterol={0}
+                sodium={20}
+                totalCarbs={34}
+                fiber={0}
+                totalSugars={28}
+                addedSugars={28}
+                protein={3}
+                calcium={25}
+                iron={0.9}
+                potassium={260}
+              />
+              <p className="text-xs text-gray-500 text-center max-w-xs mt-3">
+                Label assumes coconut cream with granulated sugar; fructose, allulose, or other sweeteners change sugars and calories—ask staff or recalculate for your choice.
+              </p>
+            </div>
           </div>
 
           {/* Additional Information */}
@@ -306,8 +338,10 @@ const NutritionalFacts: React.FC<NutritionalFactsProps> = ({ isOpen, onClose }) 
                 for keto and diabetic diets. Calculated from: 64 oz heavy cream, 16 oz egg yolks, and 2 cups allulose.
               </li>
               <li>
-                Both bases contain the same amount of fat, protein, and cholesterol as they share the same cream 
-                and egg yolk content. The difference is primarily in the sweeteners used.
+                <strong>Vegan Base:</strong> Dairy-free and egg-free—coconut cream, sweetener of choice, and cornstarch. The sample label uses granulated sugar; values vary by coconut cream brand and sweetener.
+              </li>
+              <li>
+                Traditional and allulose dairy bases share the same cream and egg yolk profile; the difference is mainly the sweetener. The vegan base uses coconut cream instead of dairy and has no cholesterol.
               </li>
               <li>
                 Values are calculated for the base only. Actual nutritional content may vary based on added flavors 

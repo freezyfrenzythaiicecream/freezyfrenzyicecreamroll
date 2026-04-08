@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Star, Leaf, Heart, Info } from 'lucide-react';
+import { ArrowRight, Star, Leaf, Heart, Info, Sprout } from 'lucide-react';
 import { useSiteConfig } from '../context/SiteConfigContext';
 import EditablePhoto from './EditablePhoto';
 
@@ -40,13 +40,18 @@ const Hero: React.FC = () => {
             </h1>
             
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Indulge in our delicious ice cream rolls made fresh to order! Choose from our 
-              <span className="font-semibold text-green-600"> sugar-free keto options</span> or 
-              <span className="font-semibold text-pink-600"> traditional sweet treats</span> - 
-              we have something for everyone's taste and dietary preferences.
+              Indulge in our delicious ice cream rolls made fresh to order! Choose 
+              <span className="font-semibold text-amber-800"> vegan coconut cream</span>,{' '}
+              <span className="font-semibold text-green-600"> sugar-free keto options</span>, or 
+              <span className="font-semibold text-pink-600"> traditional sweet treats</span>— 
+              something for every taste and dietary preference.
             </p>
 
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 mb-6">
+              <div className="flex items-center space-x-2 bg-amber-100 px-4 py-2 rounded-full border border-amber-200">
+                <Sprout className="w-5 h-5 text-amber-700" />
+                <span className="text-amber-900 font-semibold">Vegan Base</span>
+              </div>
               <div className="flex items-center space-x-2 bg-green-100 px-4 py-2 rounded-full border border-green-200">
                 <Leaf className="w-5 h-5 text-green-600" />
                 <span className="text-green-800 font-semibold">Sugar-Free Options</span>

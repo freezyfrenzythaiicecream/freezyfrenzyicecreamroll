@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Heart, Instagram, Facebook, Mail, Phone, MapPin, Clock, Info } from 'lucide-react';
 import { useSiteConfig } from '../context/SiteConfigContext';
 import EditablePhoto from './EditablePhoto';
@@ -9,6 +10,8 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ onShowNutritionalFacts }) => {
   const { config } = useSiteConfig();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const quickLinks = useMemo(
     () =>
@@ -23,7 +26,19 @@ const Footer: React.FC<FooterProps> = ({ onShowNutritionalFacts }) => {
     [config]
   );
 
-  const scrollToSection = (sectionId: string) => {
+  const goToNavTarget = (sectionId: string) => {
+    if (sectionId === 'wishing-wall') {
+      navigate('/wishing-wall');
+      return;
+    }
+    if (sectionId === 'about') {
+      navigate('/about');
+      return;
+    }
+    if (location.pathname !== '/') {
+      navigate({ pathname: '/', hash: `#${sectionId}` });
+      return;
+    }
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
@@ -79,7 +94,7 @@ const Footer: React.FC<FooterProps> = ({ onShowNutritionalFacts }) => {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => scrollToSection(item.id)}
+                  onClick={() => goToNavTarget(item.id)}
                   className="block text-gray-300 hover:text-white transition-colors"
                 >
                   {item.label}
