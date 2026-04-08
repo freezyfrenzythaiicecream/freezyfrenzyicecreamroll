@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { X, Coffee, Snowflake, ArrowRight, Sparkles } from 'lucide-react';
+import { useSiteConfig } from '../context/SiteConfigContext';
 
 const HotBeveragePopup: React.FC = () => {
+  const { config } = useSiteConfig();
+  const popupEnabled = config.showHotBeveragePopup;
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    if (!popupEnabled) return;
     // Check if popup was already shown in this session
     // Using sessionStorage so it shows again when the browser tab is closed and reopened
     const popupShown = sessionStorage.getItem('hotBeveragePopupShown');
@@ -16,7 +20,7 @@ const HotBeveragePopup: React.FC = () => {
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [popupEnabled]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -30,7 +34,7 @@ const HotBeveragePopup: React.FC = () => {
     setIsVisible(false);
   };
 
-  if (!isVisible) return null;
+  if (!popupEnabled || !isVisible) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fadeIn">

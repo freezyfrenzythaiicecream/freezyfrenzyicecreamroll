@@ -1,8 +1,24 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Menu, X, Phone, MapPin } from 'lucide-react';
+import { useSiteConfig } from '../context/SiteConfigContext';
 
 const Header: React.FC = () => {
+  const { config } = useSiteConfig();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const announcement = config.announcement.trim();
+
+  const navItems = useMemo(
+    () =>
+      [
+        { id: 'home', label: 'Home', show: config.showHero },
+        { id: 'menu', label: 'Menu', show: config.showMenu },
+        { id: 'about', label: 'About', show: config.showAbout },
+        { id: 'wishing-wall', label: 'Wishing Wall', show: config.showWishingWall },
+        { id: 'gallery', label: 'Gallery', show: config.showGallery },
+        { id: 'contact', label: 'Contact', show: config.showContact },
+      ].filter((item) => item.show),
+    [config]
+  );
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -14,6 +30,11 @@ const Header: React.FC = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+      {announcement ? (
+        <div className="bg-amber-100 border-b border-amber-200 text-amber-950 text-center text-sm py-2 px-4">
+          {announcement}
+        </div>
+      ) : null}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center min-h-28 py-3">
           <div className="flex items-center space-x-4">
@@ -32,37 +53,17 @@ const Header: React.FC = () => {
             <span className="text-lg sm:text-xl font-bold text-gray-800 hidden sm:inline leading-tight ml-2">Freezy Frenzy Thai Ice Cream Roll</span>
           </div>
 
-          <nav className="hidden md:flex items-center space-x-8 ml-8">
-            <button 
-              onClick={() => scrollToSection('home')}
-              className="text-gray-700 hover:text-yellow-500 font-medium transition-colors py-2 px-2"
-            >
-              Home
-            </button>
-            <button 
-              onClick={() => scrollToSection('menu')}
-              className="text-gray-700 hover:text-yellow-500 font-medium transition-colors py-2 px-2"
-            >
-              Menu
-            </button>
-            <button 
-              onClick={() => scrollToSection('about')}
-              className="text-gray-700 hover:text-yellow-500 font-medium transition-colors py-2 px-2"
-            >
-              About
-            </button>
-            <button 
-              onClick={() => scrollToSection('gallery')}
-              className="text-gray-700 hover:text-yellow-500 font-medium transition-colors py-2 px-2"
-            >
-              Gallery
-            </button>
-            <button 
-              onClick={() => scrollToSection('contact')}
-              className="text-gray-700 hover:text-yellow-500 font-medium transition-colors py-2 px-2"
-            >
-              Contact
-            </button>
+          <nav className="hidden md:flex items-center space-x-6 lg:space-x-8 ml-4 lg:ml-8 flex-wrap gap-y-1">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => scrollToSection(item.id)}
+                className="text-gray-700 hover:text-yellow-500 font-medium transition-colors py-2 px-2"
+              >
+                {item.label}
+              </button>
+            ))}
           </nav>
 
           <div className="hidden lg:flex items-center space-x-4 ml-8">
@@ -87,36 +88,16 @@ const Header: React.FC = () => {
         {isMenuOpen && (
           <div className="md:hidden bg-white border-t border-gray-200 py-6">
             <nav className="flex flex-col space-y-1">
-              <button 
-                onClick={() => scrollToSection('home')}
-                className="text-gray-700 hover:text-yellow-500 hover:bg-yellow-50 font-medium py-3 px-4 text-left transition-colors rounded-lg"
-              >
-                Home
-              </button>
-              <button 
-                onClick={() => scrollToSection('menu')}
-                className="text-gray-700 hover:text-yellow-500 hover:bg-yellow-50 font-medium py-3 px-4 text-left transition-colors rounded-lg"
-              >
-                Menu
-              </button>
-              <button 
-                onClick={() => scrollToSection('about')}
-                className="text-gray-700 hover:text-yellow-500 hover:bg-yellow-50 font-medium py-3 px-4 text-left transition-colors rounded-lg"
-              >
-                About
-              </button>
-              <button 
-                onClick={() => scrollToSection('gallery')}
-                className="text-gray-700 hover:text-yellow-500 hover:bg-yellow-50 font-medium py-3 px-4 text-left transition-colors rounded-lg"
-              >
-                Gallery
-              </button>
-              <button 
-                onClick={() => scrollToSection('contact')}
-                className="text-gray-700 hover:text-yellow-500 hover:bg-yellow-50 font-medium py-3 px-4 text-left transition-colors rounded-lg"
-              >
-                Contact
-              </button>
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => scrollToSection(item.id)}
+                  className="text-gray-700 hover:text-yellow-500 hover:bg-yellow-50 font-medium py-3 px-4 text-left transition-colors rounded-lg"
+                >
+                  {item.label}
+                </button>
+              ))}
             </nav>
             <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
               <div className="flex items-center space-x-2 text-gray-700 text-sm bg-gray-50 px-4 py-3 rounded-lg">

@@ -1,11 +1,27 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Heart, Instagram, Facebook, Twitter, Mail, Phone, MapPin, Clock, Info } from 'lucide-react';
+import { useSiteConfig } from '../context/SiteConfigContext';
 
 interface FooterProps {
   onShowNutritionalFacts?: () => void;
 }
 
 const Footer: React.FC<FooterProps> = ({ onShowNutritionalFacts }) => {
+  const { config } = useSiteConfig();
+
+  const quickLinks = useMemo(
+    () =>
+      [
+        { id: 'home', label: 'Home', show: config.showHero },
+        { id: 'menu', label: 'Menu', show: config.showMenu },
+        { id: 'about', label: 'About Us', show: config.showAbout },
+        { id: 'wishing-wall', label: 'Wishing Wall', show: config.showWishingWall },
+        { id: 'gallery', label: 'Gallery', show: config.showGallery },
+        { id: 'contact', label: 'Contact', show: config.showContact },
+      ].filter((item) => item.show),
+    [config]
+  );
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -57,36 +73,16 @@ const Footer: React.FC<FooterProps> = ({ onShowNutritionalFacts }) => {
           <div>
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <nav className="space-y-3">
-              <button 
-                onClick={() => scrollToSection('home')}
-                className="block text-gray-300 hover:text-white transition-colors"
-              >
-                Home
-              </button>
-              <button 
-                onClick={() => scrollToSection('menu')}
-                className="block text-gray-300 hover:text-white transition-colors"
-              >
-                Menu
-              </button>
-              <button 
-                onClick={() => scrollToSection('about')}
-                className="block text-gray-300 hover:text-white transition-colors"
-              >
-                About Us
-              </button>
-              <button 
-                onClick={() => scrollToSection('gallery')}
-                className="block text-gray-300 hover:text-white transition-colors"
-              >
-                Gallery
-              </button>
-              <button 
-                onClick={() => scrollToSection('contact')}
-                className="block text-gray-300 hover:text-white transition-colors"
-              >
-                Contact
-              </button>
+              {quickLinks.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => scrollToSection(item.id)}
+                  className="block text-gray-300 hover:text-white transition-colors"
+                >
+                  {item.label}
+                </button>
+              ))}
             </nav>
           </div>
           

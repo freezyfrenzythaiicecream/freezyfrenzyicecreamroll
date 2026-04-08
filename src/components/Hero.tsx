@@ -1,7 +1,11 @@
 import React from 'react';
 import { ArrowRight, Star, Leaf, Heart, Info } from 'lucide-react';
+import { useSiteConfig } from '../context/SiteConfigContext';
 
 const Hero: React.FC = () => {
+  const { config } = useSiteConfig();
+  const hasAnnouncement = config.announcement.trim().length > 0;
+
   const scrollToMenu = () => {
     const element = document.getElementById('menu');
     if (element) {
@@ -10,7 +14,12 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-32">
+    <section
+      id="home"
+      className={`relative min-h-screen flex items-center justify-center overflow-hidden ${
+        hasAnnouncement ? 'pt-40 sm:pt-44' : 'pt-32'
+      }`}
+    >
       <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 via-pink-50 to-gray-50"></div>
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">

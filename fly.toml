@@ -1,0 +1,26 @@
+# After first deploy, set `app` to your Fly app name (from `fly apps list` or `fly launch`).
+app = "freezyfrenzyicecreamroll"
+primary_region = "dfw"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[mounts]
+  source = "sqlite_data"
+  destination = "/data"
+
+[env]
+  SQLITE_PATH = "/data/app.db"
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1
