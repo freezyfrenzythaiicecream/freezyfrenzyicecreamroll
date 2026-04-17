@@ -25,8 +25,12 @@ type AuthContextValue = {
   role: UserRole | null;
   profileLoading: boolean;
   canEditSite: boolean;
+  /** Site admins can manage team accounts (roles, passwords, invites). */
+  canManageUsers: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  /** Re-fetch `/api/auth/me` (e.g. after admin changes their own role). */
+  refreshProfile: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -118,10 +122,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
+  const refreshProfile = useCallback(async () => {
+    try {
+      const me = await fetchMe();
+      setUser(me);
+    } catch {
+      setUser(null);
+    }
+  }, []);
+
   const role = user?.role ?? null;
   const canEditSite = Boolean(
     user && !profileLoading && (role === 'admin' || role === 'editor')
   );
+  const canManageUsers = Boolean(user && !profileLoading && role === 'admin');
 
   const value = useMemo(
     () => ({
@@ -131,10 +145,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role,
       profileLoading,
       canEditSite,
+      canManageUsers,
       signIn,
       signOut,
+      refreshProfile,
     }),
-    [apiOnline, googleOAuth, user, role, profileLoading, canEditSite, signIn, signOut]
+    [
+      apiOnline,
+      googleOAuth,
+      user,
+      role,
+      profileLoading,
+      canEditSite,
+      canManageUsers,
+      signIn,
+      signOut,
+      refreshProfile,
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

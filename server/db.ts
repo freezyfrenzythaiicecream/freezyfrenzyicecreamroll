@@ -193,6 +193,132 @@ export function findUserByEmail(db: Database.Database, email: string): UserRow |
   return row ?? null;
 }
 
+export function getUserById(db: Database.Database, id: string): UserRow | null {
+  const row = db
+    .prepare('select id, email, role, password_hash, google_sub from users where id = ?')
+    .get(id) as UserRow | undefined;
+  return row ?? null;
+}
+
+export type ListedUser = {
+  id: string;
+  email: string;
+  role: AuthedUser['role'];
+  googleLinked: boolean;
+  createdAt: string;
+};
+
+export function listUsers(db: Database.Database): ListedUser[] {
+  const rows = db
+    .prepare('select id, email, role, google_sub, created_at from users order by email collate nocase')
+    .all() as {
+      id: string;
+      email: string;
+      role: AuthedUser['role'];
+      google_sub: string | null;
+      created_at: string | null;
+    }[];
+  return rows.map((r) => ({
+    id: r.id,
+    email: r.email,
+    role: r.role,
+    googleLinked: Boolean(r.google_sub),
+    createdAt: r.created_at ?? '',
+  }));
+}
+
+export function countUsersWithRole(db: Database.Database, role: AuthedUser['role']): number {
+  const row = db.prepare('select count(*) as c from users where role = ?').get(role) as {
+    c: number;
+  };
+  return row.c;
+}
+
+export function deleteSessionsForUser(db: Database.Database, userId: string): void {
+  db.prepare('delete from sessions where user_id = ?').run(userId);
+}
+
+export function createUserWithPassword(
+  db: Database.Database,
+  email: string,
+  password: string,
+  role: AuthedUser['role']
+): { ok: true; user: AuthedUser } | { ok: false; error: string } {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized.includes('@')) return { ok: false, error: 'Valid email required' };
+  if (findUserByEmail(db, normalized)) return { ok: false, error: 'Email already in use' };
+  if (password.length < 8) return { ok: false, error: 'Password must be at least 8 characters' };
+  const id = randomUUID();
+  const passwordHash = bcrypt.hashSync(password, 10);
+  try {
+    db.prepare('insert into users (id, email, password_hash, role) values (?, ?, ?, ?)').run(
+      id,
+      normalized,
+      passwordHash,
+      role
+    );
+  } catch {
+    return { ok: false, error: 'Could not create user' };
+  }
+  return { ok: true, user: { id, email: normalized, role } };
+}
+
+type AdminUserMutationResult = { ok: true } | { ok: false; error: string };
+
+export function updateUserAsAdmin(
+  db: Database.Database,
+  targetId: string,
+  opts: { role?: AuthedUser['role']; password?: string }
+): AdminUserMutationResult {
+  const user = getUserById(db, targetId);
+  if (!user) return { ok: false, error: 'User not found' };
+
+  const newRole = opts.role !== undefined ? opts.role : user.role;
+  if (user.role === 'admin' && newRole !== 'admin') {
+    if (countUsersWithRole(db, 'admin') <= 1) {
+      return { ok: false, error: 'Cannot remove the last site admin' };
+    }
+  }
+
+  if (opts.password !== undefined) {
+    if (opts.password.length < 8) {
+      return { ok: false, error: 'Password must be at least 8 characters' };
+    }
+    const passwordHash = bcrypt.hashSync(opts.password, 10);
+    if (opts.role !== undefined) {
+      db.prepare('update users set password_hash = ?, role = ? where id = ?').run(
+        passwordHash,
+        opts.role,
+        targetId
+      );
+    } else {
+      db.prepare('update users set password_hash = ? where id = ?').run(passwordHash, targetId);
+    }
+    deleteSessionsForUser(db, targetId);
+    return { ok: true };
+  }
+
+  if (opts.role !== undefined) {
+    db.prepare('update users set role = ? where id = ?').run(opts.role, targetId);
+  }
+  return { ok: true };
+}
+
+export function deleteUserAsAdmin(
+  db: Database.Database,
+  targetId: string,
+  actorId: string
+): AdminUserMutationResult {
+  if (targetId === actorId) return { ok: false, error: 'Cannot delete your own account' };
+  const row = getUserById(db, targetId);
+  if (!row) return { ok: false, error: 'User not found' };
+  if (row.role === 'admin' && countUsersWithRole(db, 'admin') <= 1) {
+    return { ok: false, error: 'Cannot delete the last site admin' };
+  }
+  db.prepare('delete from users where id = ?').run(targetId);
+  return { ok: true };
+}
+
 export function getUserGoogleSub(db: Database.Database, userId: string): string | null {
   const row = db
     .prepare('select google_sub from users where id = ?')

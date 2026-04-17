@@ -517,7 +517,7 @@ const Menu: React.FC = () => {
             <div className="flex-1">
               <p className="text-sm font-semibold text-yellow-900 mb-1">Important: Check Allulose Availability</p>
               <p className="text-sm text-yellow-800">
-                Please verify that the allulose (sugar-free) version is available before ordering. Call us at <a href="tel:8322303830" className="font-semibold underline">(832) 230-3830</a> or check our <a href="https://www.instagram.com/freezyfrenzyicecreamroll/" target="_blank" rel="noopener noreferrer" className="font-semibold underline">Instagram</a> or <a href="https://www.facebook.com/freezyfrenzyicecreamroll/" target="_blank" rel="noopener noreferrer" className="font-semibold underline">Facebook</a> for current availability.
+                Please verify that the allulose (sugar-free) version is available before ordering. Call us at <a href="tel:8322303830" className="font-semibold underline">(832) 230-3830</a> or check our <a href="https://www.instagram.com/freezyfrenzythaiicecreamroll/" target="_blank" rel="noopener noreferrer" className="font-semibold underline">Instagram</a> or <a href="https://www.facebook.com/freezyfrenzyicecreamroll/" target="_blank" rel="noopener noreferrer" className="font-semibold underline">Facebook</a> for current availability.
               </p>
             </div>
           </div>

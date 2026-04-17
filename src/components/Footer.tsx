@@ -72,7 +72,7 @@ const Footer: React.FC<FooterProps> = ({ onShowNutritionalFacts }) => {
             </p>
             
             <div className="flex space-x-4">
-              <a href="https://www.instagram.com/freezyfrenzyicecreamroll/" className="bg-gradient-to-r from-pink-500 to-rose-500 p-3 rounded-full hover:scale-110 transition-transform duration-300">
+              <a href="https://www.instagram.com/freezyfrenzythaiicecreamroll/" className="bg-gradient-to-r from-pink-500 to-rose-500 p-3 rounded-full hover:scale-110 transition-transform duration-300">
                 <Instagram className="w-5 h-5" />
               </a>
               <a href="https://www.facebook.com/freezyfrenzyicecreamroll/" className="bg-gradient-to-r from-blue-600 to-blue-800 p-3 rounded-full hover:scale-110 transition-transform duration-300">

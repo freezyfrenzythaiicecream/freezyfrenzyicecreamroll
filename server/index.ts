@@ -14,6 +14,11 @@ import {
   verifyLogin,
   getSessionUser,
   getUserGoogleSub,
+  listUsers,
+  createUserWithPassword,
+  updateUserAsAdmin,
+  deleteUserAsAdmin,
+  type AuthedUser,
 } from './db';
 import { mergeSiteConfig, type SiteConfig } from './siteDefaults';
 import {
@@ -145,6 +150,90 @@ api.post('/site-assets', async (c) => {
   const filename = `${randomUUID()}${ext}`;
   writeFileSync(join(root, filename), Buffer.from(await file.arrayBuffer()));
   return c.json({ url: `/api/site-assets/${filename}` });
+});
+
+function parseRole(value: unknown): AuthedUser['role'] | null {
+  if (value === 'admin' || value === 'editor' || value === 'viewer') return value;
+  return null;
+}
+
+api.get('/users', (c) => {
+  const sid = getCookie(c, COOKIE);
+  const authed = getSessionUser(db, sid);
+  if (!authed || authed.role !== 'admin') {
+    return c.json({ error: 'Forbidden' }, 403);
+  }
+  return c.json({ users: listUsers(db) });
+});
+
+api.post('/users', async (c) => {
+  const sid = getCookie(c, COOKIE);
+  const authed = getSessionUser(db, sid);
+  if (!authed || authed.role !== 'admin') {
+    return c.json({ error: 'Forbidden' }, 403);
+  }
+  let body: { email?: string; password?: string; role?: string };
+  try {
+    body = (await c.req.json()) as { email?: string; password?: string; role?: string };
+  } catch {
+    return c.json({ error: 'Invalid JSON' }, 400);
+  }
+  const email = body.email?.trim();
+  const password = body.password;
+  const role = parseRole(body.role);
+  if (!email || !password) return c.json({ error: 'Email and password required' }, 400);
+  if (!role) return c.json({ error: 'Role must be admin, editor, or viewer' }, 400);
+  const result = createUserWithPassword(db, email, password, role);
+  if (!result.ok) return c.json({ error: result.error }, 400);
+  return c.json({
+    user: { ...result.user, googleLinked: Boolean(getUserGoogleSub(db, result.user.id)) },
+  });
+});
+
+api.patch('/users/:id', async (c) => {
+  const sid = getCookie(c, COOKIE);
+  const authed = getSessionUser(db, sid);
+  if (!authed || authed.role !== 'admin') {
+    return c.json({ error: 'Forbidden' }, 403);
+  }
+  const id = c.req.param('id');
+  let body: { role?: string; password?: string };
+  try {
+    body = (await c.req.json()) as { role?: string; password?: string };
+  } catch {
+    return c.json({ error: 'Invalid JSON' }, 400);
+  }
+  const patch: { role?: AuthedUser['role']; password?: string } = {};
+  if (body.role !== undefined) {
+    const role = parseRole(body.role);
+    if (!role) return c.json({ error: 'Role must be admin, editor, or viewer' }, 400);
+    patch.role = role;
+  }
+  if (body.password !== undefined) patch.password = body.password;
+  if (patch.role === undefined && patch.password === undefined) {
+    return c.json({ error: 'Provide role and/or password' }, 400);
+  }
+  const result = updateUserAsAdmin(db, id, patch);
+  if (!result.ok) {
+    const status = result.error === 'User not found' ? 404 : 400;
+    return c.json({ error: result.error }, status);
+  }
+  return c.json({ ok: true });
+});
+
+api.delete('/users/:id', (c) => {
+  const sid = getCookie(c, COOKIE);
+  const authed = getSessionUser(db, sid);
+  if (!authed || authed.role !== 'admin') {
+    return c.json({ error: 'Forbidden' }, 403);
+  }
+  const id = c.req.param('id');
+  const result = deleteUserAsAdmin(db, id, authed.id);
+  if (!result.ok) {
+    const status = result.error === 'User not found' ? 404 : 400;
+    return c.json({ error: result.error }, status);
+  }
+  return c.json({ ok: true });
 });
 
 api.get('/auth/me', (c) => {

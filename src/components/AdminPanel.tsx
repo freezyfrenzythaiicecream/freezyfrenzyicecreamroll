@@ -1,8 +1,16 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { LogOut, Settings2, X } from 'lucide-react';
+import { LogOut, Settings2, UserCog, X } from 'lucide-react';
 import { useSiteConfig } from '../context/SiteConfigContext';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, type UserRole } from '../context/AuthContext';
 import type { SiteConfig } from '../siteConfig';
+
+type ListedTeamUser = {
+  id: string;
+  email: string;
+  role: UserRole;
+  googleLinked: boolean;
+  createdAt: string;
+};
 
 type SectionToggleKey = Exclude<keyof SiteConfig, 'announcement' | 'imageOverrides'>;
 
@@ -23,14 +31,33 @@ const sectionFields: { key: SectionToggleKey; label: string }[] = [
 const AdminPanel: React.FC = () => {
   const { config, updateConfig, resetConfig, remoteReady, saveError, clearSaveError } =
     useSiteConfig();
-  const { apiOnline, googleOAuth, user, role, profileLoading, canEditSite, signIn, signOut } =
-    useAuth();
+  const {
+    apiOnline,
+    googleOAuth,
+    user,
+    role,
+    profileLoading,
+    canEditSite,
+    canManageUsers,
+    signIn,
+    signOut,
+    refreshProfile,
+  } = useAuth();
 
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [signingIn, setSigningIn] = useState(false);
+
+  const [teamUsers, setTeamUsers] = useState<ListedTeamUser[] | null>(null);
+  const [teamUsersError, setTeamUsersError] = useState<string | null>(null);
+  const [teamUsersLoading, setTeamUsersLoading] = useState(false);
+  const [newTeamEmail, setNewTeamEmail] = useState('');
+  const [newTeamPassword, setNewTeamPassword] = useState('');
+  const [newTeamRole, setNewTeamRole] = useState<UserRole>('editor');
+  const [creatingTeamUser, setCreatingTeamUser] = useState(false);
+  const [passwordDrafts, setPasswordDrafts] = useState<Record<string, string>>({});
 
   const syncOpenFromHash = useCallback(() => {
     setOpen(window.location.hash === '#admin');
@@ -61,6 +88,31 @@ const AdminPanel: React.FC = () => {
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
     setOpen(false);
   }, [user, profileLoading, role]);
+
+  const loadTeamUsers = useCallback(async () => {
+    if (!canManageUsers || !apiOnline) return;
+    setTeamUsersLoading(true);
+    setTeamUsersError(null);
+    try {
+      const res = await fetch('/api/users', { credentials: 'include' });
+      const data = (await res.json()) as { users?: ListedTeamUser[]; error?: string };
+      if (!res.ok) {
+        setTeamUsersError(data.error ?? 'Could not load team accounts');
+        setTeamUsers(null);
+        return;
+      }
+      setTeamUsers(data.users ?? []);
+    } catch {
+      setTeamUsersError('Could not load team accounts');
+      setTeamUsers(null);
+    } finally {
+      setTeamUsersLoading(false);
+    }
+  }, [canManageUsers, apiOnline]);
+
+  useEffect(() => {
+    if (open && canManageUsers && apiOnline) void loadTeamUsers();
+  }, [open, canManageUsers, apiOnline, loadTeamUsers]);
 
   const closePanel = () => {
     setOpen(false);
@@ -99,6 +151,102 @@ const AdminPanel: React.FC = () => {
     }
   };
 
+  const handleTeamRoleChange = async (userId: string, nextRole: UserRole) => {
+    setTeamUsersError(null);
+    const res = await fetch(`/api/users/${encodeURIComponent(userId)}`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: nextRole }),
+    });
+    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setTeamUsersError(data.error ?? 'Could not update role');
+      void loadTeamUsers();
+      return;
+    }
+    if (userId === user?.id) await refreshProfile();
+    void loadTeamUsers();
+  };
+
+  const handleSetTeamPassword = async (userId: string) => {
+    const pw = passwordDrafts[userId] ?? '';
+    if (pw.length < 8) {
+      setTeamUsersError('New password must be at least 8 characters');
+      return;
+    }
+    setTeamUsersError(null);
+    const res = await fetch(`/api/users/${encodeURIComponent(userId)}`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw }),
+    });
+    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setTeamUsersError(data.error ?? 'Could not update password');
+      return;
+    }
+    setPasswordDrafts((d) => ({ ...d, [userId]: '' }));
+    if (userId === user?.id) {
+      await signOut();
+      closePanel();
+      return;
+    }
+    void loadTeamUsers();
+  };
+
+  const handleCreateTeamUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTeamUsersError(null);
+    setCreatingTeamUser(true);
+    try {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: newTeamEmail.trim(),
+          password: newTeamPassword,
+          role: newTeamRole,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        setTeamUsersError(data.error ?? 'Could not create user');
+        return;
+      }
+      setNewTeamEmail('');
+      setNewTeamPassword('');
+      setNewTeamRole('editor');
+      void loadTeamUsers();
+    } finally {
+      setCreatingTeamUser(false);
+    }
+  };
+
+  const handleDeleteTeamUser = async (row: ListedTeamUser) => {
+    if (row.id === user?.id) return;
+    if (
+      !window.confirm(
+        `Remove ${row.email} from team accounts? They will no longer be able to sign in.`
+      )
+    ) {
+      return;
+    }
+    setTeamUsersError(null);
+    const res = await fetch(`/api/users/${encodeURIComponent(row.id)}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setTeamUsersError(data.error ?? 'Could not remove user');
+      return;
+    }
+    void loadTeamUsers();
+  };
+
   const settingsLocked = Boolean(
     apiOnline && (!remoteReady || !!(user && profileLoading))
   );
@@ -117,7 +265,7 @@ const AdminPanel: React.FC = () => {
         onClick={closePanel}
       />
       <div
-        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl border border-gray-200"
+        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl border border-gray-200"
         role="dialog"
         aria-labelledby="admin-panel-title"
       >
@@ -303,6 +451,147 @@ const AdminPanel: React.FC = () => {
                   disabled={settingsLocked}
                 />
               </div>
+
+              {canManageUsers && apiOnline ? (
+                <div className="rounded-xl border border-amber-200 bg-amber-50/60 px-4 py-4 space-y-4">
+                  <div className="flex items-center gap-2 text-gray-900">
+                    <UserCog className="w-5 h-5 shrink-0 text-amber-700" aria-hidden />
+                    <p className="text-sm font-semibold">Team accounts</p>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Invite users with email and password, set roles (admin can manage accounts;
+                    editors change the public site; viewers cannot use this panel), reset passwords,
+                    or remove accounts. The last admin cannot be removed or demoted.
+                  </p>
+                  {teamUsersError ? (
+                    <p className="text-sm text-red-600" role="alert">
+                      {teamUsersError}
+                    </p>
+                  ) : null}
+                  {teamUsersLoading && !teamUsers?.length ? (
+                    <p className="text-sm text-gray-600">Loading accounts…</p>
+                  ) : null}
+                  {teamUsers ? (
+                    <div className="overflow-x-auto rounded-lg border border-amber-100/80 bg-white">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-gray-100 text-left text-xs uppercase tracking-wide text-gray-500">
+                            <th className="px-3 py-2 font-medium normal-case">Email</th>
+                            <th className="px-3 py-2 font-medium normal-case">Role</th>
+                            <th className="px-3 py-2 font-medium normal-case">Password</th>
+                            <th className="px-3 py-2 font-medium normal-case w-20" />
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {teamUsers.map((row) => (
+                            <tr key={row.id} className="border-b border-gray-50 align-top">
+                              <td className="px-3 py-2">
+                                <div className="text-gray-900 break-all">{row.email}</div>
+                                {row.googleLinked ? (
+                                  <span className="text-xs text-green-700">Google linked</span>
+                                ) : null}
+                              </td>
+                              <td className="px-3 py-2">
+                                <select
+                                  value={row.role}
+                                  onChange={(e) =>
+                                    void handleTeamRoleChange(row.id, e.target.value as UserRole)
+                                  }
+                                  className="max-w-full rounded-md border border-gray-300 px-2 py-1 text-gray-900 bg-white"
+                                  aria-label={`Role for ${row.email}`}
+                                >
+                                  <option value="admin">admin</option>
+                                  <option value="editor">editor</option>
+                                  <option value="viewer">viewer</option>
+                                </select>
+                              </td>
+                              <td className="px-3 py-2">
+                                <div className="flex flex-col gap-1 min-w-[10rem]">
+                                  <input
+                                    type="password"
+                                    autoComplete="new-password"
+                                    placeholder="New password (8+)"
+                                    value={passwordDrafts[row.id] ?? ''}
+                                    onChange={(e) =>
+                                      setPasswordDrafts((d) => ({ ...d, [row.id]: e.target.value }))
+                                    }
+                                    className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-900"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => void handleSetTeamPassword(row.id)}
+                                    className="text-left text-xs font-medium text-amber-900 hover:underline"
+                                  >
+                                    Set password
+                                  </button>
+                                </div>
+                              </td>
+                              <td className="px-3 py-2">
+                                {row.id !== user?.id ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => void handleDeleteTeamUser(row)}
+                                    className="text-xs text-red-700 hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                ) : (
+                                  <span className="text-xs text-gray-400">You</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : null}
+
+                  <form
+                    onSubmit={handleCreateTeamUser}
+                    className="space-y-2 rounded-lg border border-dashed border-amber-300/80 bg-white/90 px-3 py-3"
+                  >
+                    <p className="text-xs font-medium text-gray-800">Add account</p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <input
+                        type="email"
+                        required
+                        placeholder="Email"
+                        value={newTeamEmail}
+                        onChange={(e) => setNewTeamEmail(e.target.value)}
+                        className="rounded-md border border-gray-300 px-2 py-1.5 text-sm text-gray-900"
+                      />
+                      <input
+                        type="password"
+                        required
+                        autoComplete="new-password"
+                        placeholder="Password (min 8 characters)"
+                        value={newTeamPassword}
+                        onChange={(e) => setNewTeamPassword(e.target.value)}
+                        className="rounded-md border border-gray-300 px-2 py-1.5 text-sm text-gray-900"
+                      />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <select
+                        value={newTeamRole}
+                        onChange={(e) => setNewTeamRole(e.target.value as UserRole)}
+                        className="rounded-md border border-gray-300 px-2 py-1.5 text-sm text-gray-900 bg-white"
+                        aria-label="Role for new account"
+                      >
+                        <option value="editor">editor</option>
+                        <option value="admin">admin</option>
+                        <option value="viewer">viewer</option>
+                      </select>
+                      <button
+                        type="submit"
+                        disabled={creatingTeamUser}
+                        className="rounded-md bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-3 py-1.5 transition-colors disabled:opacity-50"
+                      >
+                        {creatingTeamUser ? 'Creating…' : 'Create account'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              ) : null}
 
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
