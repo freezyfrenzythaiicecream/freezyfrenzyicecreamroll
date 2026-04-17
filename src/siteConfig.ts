@@ -6,6 +6,7 @@ export type SiteConfig = {
   showGallery: boolean;
   showContact: boolean;
   showHotBeveragePopup: boolean;
+  showMailingListPopup: boolean;
   /** Shown in a strip below the site header when non-empty */
   announcement: string;
   /**
@@ -25,6 +26,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
   showGallery: true,
   showContact: true,
   showHotBeveragePopup: true,
+  showMailingListPopup: true,
   announcement: '',
   imageOverrides: {},
 };

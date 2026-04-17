@@ -28,6 +28,7 @@ import {
   handleGoogleStart,
   isGoogleOAuthConfigured,
 } from './googleAuth';
+import { cloverEmailSignup, cloverPhoneSignup } from './cloverSignup';
 
 const COOKIE = 'ff_session';
 const distDir = normalize(join(process.cwd(), 'dist'));
@@ -92,6 +93,34 @@ api.get('/auth/google/callback', async (c) => handleGoogleCallback(db, c, create
 
 api.get('/site-config', (c) => {
   return c.json(getSiteConfig(db));
+});
+
+api.post('/clover-signup/email', async (c) => {
+  let body: unknown;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: 'Invalid JSON' }, 400);
+  }
+  const result = await cloverEmailSignup(body);
+  if (!result.ok) {
+    return Response.json({ error: result.error }, { status: result.status });
+  }
+  return c.json({ customerId: result.customerId });
+});
+
+api.post('/clover-signup/phone', async (c) => {
+  let body: unknown;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: 'Invalid JSON' }, 400);
+  }
+  const result = await cloverPhoneSignup(body);
+  if (!result.ok) {
+    return Response.json({ error: result.error }, { status: result.status });
+  }
+  return c.json({ customerId: result.customerId });
 });
 
 api.put('/site-config', async (c) => {

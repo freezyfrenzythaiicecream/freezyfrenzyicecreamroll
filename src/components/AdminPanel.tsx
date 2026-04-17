@@ -22,6 +22,7 @@ const sectionFields: { key: SectionToggleKey; label: string }[] = [
   { key: 'showGallery', label: 'Gallery' },
   { key: 'showContact', label: 'Contact' },
   { key: 'showHotBeveragePopup', label: 'Hot beverage popup' },
+  { key: 'showMailingListPopup', label: 'Mailing list (SMS) popup' },
 ];
 
 /**
@@ -312,7 +313,7 @@ const AdminPanel: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none"
-                  disabled={!apiOnline || signingIn}
+                  disabled={signingIn}
                 />
               </div>
               <div>
@@ -329,7 +330,7 @@ const AdminPanel: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none"
-                  disabled={!apiOnline || signingIn}
+                  disabled={signingIn}
                 />
               </div>
               {loginError && (
@@ -340,7 +341,7 @@ const AdminPanel: React.FC = () => {
               <button
                 type="submit"
                 className="w-full rounded-lg bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold py-2.5 transition-colors disabled:opacity-50"
-                disabled={!apiOnline || signingIn}
+                disabled={signingIn}
               >
                 {signingIn ? 'Signing in…' : 'Sign in'}
               </button>

@@ -111,8 +111,8 @@ To add or promote users, use the SQLite CLI or any DB tool against `SQLITE_PATH`
 ## Deploy (Fly.io)
 
 1. Install [`flyctl`](https://fly.io/docs/hands-on/install-flyctl/) and log in.
-2. Create a **volume** (once per app region), e.g.  
-   `fly volumes create sqlite_data --region dfw --size 1`
+2. Create **one volume per machine** in the app’s region (see `fly.toml` `primary_region`), e.g.  
+   `fly volumes create sqlite_data --region iad --size 1 -n 2`
 3. Set secrets (example):
 
    ```bash

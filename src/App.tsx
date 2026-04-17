@@ -11,6 +11,8 @@ import Gallery from './components/Gallery';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import HotBeveragePopup from './components/HotBeveragePopup';
+import MailingListPopup from './components/MailingListPopup';
+import CloverRewardsLanding from './components/CloverRewardsLanding';
 import NutritionalFacts from './components/NutritionalFacts';
 import AdminPanel from './components/AdminPanel';
 
@@ -77,6 +79,7 @@ function AppContent() {
     <>
       <AdminPanel />
       <HotBeveragePopup />
+      <MailingListPopup />
       <NutritionalFacts
         isOpen={isNutritionalFactsOpen}
         onClose={() => setIsNutritionalFactsOpen(false)}
@@ -86,6 +89,7 @@ function AppContent() {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/wishing-wall" element={<WishingWallPage />} />
+        <Route path="/rewards" element={<CloverRewardsLanding />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Footer onShowNutritionalFacts={() => setIsNutritionalFactsOpen(true)} />

@@ -100,6 +100,13 @@ const Footer: React.FC<FooterProps> = ({ onShowNutritionalFacts }) => {
                   {item.label}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={() => navigate('/rewards')}
+                className="block text-left text-gray-300 hover:text-white transition-colors"
+              >
+                Clover Rewards & mailing list
+              </button>
             </nav>
           </div>
           

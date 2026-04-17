@@ -6,6 +6,7 @@ export type SiteConfig = {
   showGallery: boolean;
   showContact: boolean;
   showHotBeveragePopup: boolean;
+  showMailingListPopup: boolean;
   announcement: string;
   imageOverrides: Record<string, string>;
 };
@@ -20,6 +21,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
   showGallery: true,
   showContact: true,
   showHotBeveragePopup: true,
+  showMailingListPopup: true,
   announcement: '',
   imageOverrides: {},
 };
